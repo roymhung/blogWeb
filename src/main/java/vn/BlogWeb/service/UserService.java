@@ -1,10 +1,10 @@
 package vn.BlogWeb.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import vn.BlogWeb.model.User;
 import vn.BlogWeb.repository.UserRepository;
 
@@ -29,8 +29,8 @@ public class UserService {
     }
 
     public User findUserById(int id) {
-        Optional<User> userOpt = this.userRepository.findById(id);
-        return userOpt.get();
+        return this.userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("user not found with id = " + id));
     }
 
     public void updateUser(User inputUser) {
