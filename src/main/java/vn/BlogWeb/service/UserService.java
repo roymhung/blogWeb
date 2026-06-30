@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
+import vn.BlogWeb.helper.exception.ResourceNotFoundException;
+import vn.BlogWeb.model.Role;
 import vn.BlogWeb.model.User;
 import vn.BlogWeb.model.dto.UserResponseDTO;
+import vn.BlogWeb.repository.RoleRepository;
 import vn.BlogWeb.repository.UserRepository;
 
 @Service
@@ -17,6 +20,7 @@ import vn.BlogWeb.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     public List<User> fetchUsers() {
@@ -26,10 +30,13 @@ public class UserService {
     }
 
     public UserResponseDTO convertUserToDTO(User user) {
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        return dto;
+        // UserResponseDTO dto = new UserResponseDTO();
+        // dto.setId(user.getId());
+        // dto.setEmail(user.getEmail());
+        // return dto;
+
+        return UserResponseDTO.builder().id(user.getId()).name(user.getName())
+                .email(user.getEmail()).address(user.getAddress()).role(user.getRole()).build();
     }
 
     public UserResponseDTO createUser(User user) {
@@ -38,9 +45,17 @@ public class UserService {
             throw new ResourceAlreadyExistsException("Email đã tồn tại: " + user.getEmail());
         }
 
+        // check role
+        Long roleId = user.getRole().getId();
+        String roleName = user.getRole().getName();
+
+        Role roleInDB = this.roleRepository.findByIdOrName(roleId, roleName)
+                .orElseThrow(() -> new ResourceNotFoundException("Role khong ton tai"));
+
         // hash password
         String hashPassword = this.passwordEncoder.encode(user.getPassword());
         user.setPassword(hashPassword);
+        user.setRole(roleInDB);
 
         return convertUserToDTO(this.userRepository.save(user));
     }
