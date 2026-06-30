@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import vn.BlogWeb.helper.ApiResponse;
 import vn.BlogWeb.model.User;
 import vn.BlogWeb.service.UserService;
@@ -28,7 +29,7 @@ public class UserController {
 
     // CREATE
     @PostMapping("/users")
-    public ResponseEntity<ApiResponse<User>> createUser(@RequestBody User inputUser) {
+    public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody User inputUser) {
         User userInDB = this.userService.createUser(inputUser);
         return ApiResponse.created(userInDB);
     }
