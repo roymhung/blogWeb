@@ -2,20 +2,22 @@ package vn.BlogWeb.service;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
 import vn.BlogWeb.model.User;
+import vn.BlogWeb.model.dto.UserResponseDTO;
 import vn.BlogWeb.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     public List<User> fetchUsers() {
         List<User> userList = this.userRepository.findAll();
@@ -23,9 +25,24 @@ public class UserService {
         return userList;
     }
 
-    public User createUser(User user) {
-        return this.userRepository.save(user);
+    public UserResponseDTO convertUserToDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        return dto;
+    }
 
+    public UserResponseDTO createUser(User user) {
+        // check email
+        if (this.userRepository.existsByEmail(user.getEmail())) {
+            throw new ResourceAlreadyExistsException("Email đã tồn tại: " + user.getEmail());
+        }
+
+        // hash password
+        String hashPassword = this.passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashPassword);
+
+        return convertUserToDTO(this.userRepository.save(user));
     }
 
     public User findUserById(int id) {

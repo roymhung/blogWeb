@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.BlogWeb.helper.ApiResponse;
 import vn.BlogWeb.model.User;
+import vn.BlogWeb.model.dto.UserResponseDTO;
 import vn.BlogWeb.service.UserService;
 
 @RestController
@@ -27,8 +28,9 @@ public class UserController {
 
     // CREATE
     @PostMapping("/users")
-    public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody User inputUser) {
-        User userInDB = this.userService.createUser(inputUser);
+    public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(
+            @Valid @RequestBody User inputUser) {
+        UserResponseDTO userInDB = this.userService.createUser(inputUser);
         return ApiResponse.created(userInDB);
     }
 
