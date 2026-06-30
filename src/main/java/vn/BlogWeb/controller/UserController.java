@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.persistence.EntityNotFoundException;
 import vn.BlogWeb.helper.ApiResponse;
 import vn.BlogWeb.model.User;
 import vn.BlogWeb.service.UserService;
@@ -41,17 +43,39 @@ public class UserController {
         return ApiResponse.success(users);
     }
 
+
+    // Try-catch cục bộ trong controller
+    // GET BY ID
+    // @GetMapping("/users/{id}")
+    // public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable int id) {
+    // try {
+    // User user = this.userService.findUserById(id);
+    // return ApiResponse.success(user);
+    // } catch (Exception e) {
+    // return ApiResponse.error(HttpStatus.BAD_REQUEST, "Id hong hop le!");
+    // }
+
+    // }
+
+    // @ExceptionHandler (local): trong 1 controller cụ thể
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<?> handleNotFound(EntityNotFoundException ex) {
+        return ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+
     // GET BY ID
     @GetMapping("/users/{id}")
     public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable int id) {
-        try {
-            User user = this.userService.findUserById(id);
-            return ApiResponse.success(user);
-        } catch (Exception e) {
-            return ApiResponse.error(HttpStatus.BAD_REQUEST, "Id hong hop le!");
+        if (id == 1000) {
+            throw new EntityNotFoundException("user not found with id = " + id);
         }
 
+        User user = this.userService.findUserById(id);
+        return ApiResponse.success(user);
+
     }
+
 
     // UPDATE
     @PutMapping("/users/{id}")
