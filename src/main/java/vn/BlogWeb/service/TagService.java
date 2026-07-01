@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
 import vn.BlogWeb.helper.exception.ResourceNotFoundException;
+import vn.BlogWeb.model.Post;
 import vn.BlogWeb.model.Tag;
+import vn.BlogWeb.repository.PostRepository;
 import vn.BlogWeb.repository.TagRepository;
 
 @Service
@@ -15,6 +17,7 @@ import vn.BlogWeb.repository.TagRepository;
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final PostRepository postRepository;
 
     public Tag createTag(Tag tag) {
         // Kiểm tra xem Tag có cùng tên đã tồn tại trong Database chưa
@@ -56,7 +59,22 @@ public class TagService {
         return this.tagRepository.save(tagInDB);
     }
 
-    public void deleteTagById(long id) {
+    public void deleteTagById(Long id) {
+        Tag tagToDelete = tagRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Tag không tồn tại với id = " + id));
+
+        // Lấy tất cả các bài viết đang chứa tag này
+        List<Post> postsToUpdate = this.postRepository.findByTagsContains(tagToDelete);
+
+        // Xóa tag khỏi từng bài viết
+        for (Post post : postsToUpdate) {
+            post.getTags().remove(tagToDelete);
+
+            // Cập nhật bảng post_tag
+            this.postRepository.save(post);
+        }
+
+        // Xóa tag
         this.tagRepository.deleteById(id);
     }
 
