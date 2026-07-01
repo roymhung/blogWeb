@@ -10,15 +10,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import jakarta.persistence.EntityNotFoundException;
 import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
 import vn.BlogWeb.helper.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<?> handleNotFound(EntityNotFoundException ex) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleAllException(Exception ex) {
         return ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
@@ -29,7 +28,7 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(HttpStatus.BAD_REQUEST, errorMessage);
     }
 
-    @ExceptionHandler({ ResourceNotFoundException.class, ResourceAlreadyExistsException.class })
+    @ExceptionHandler({ResourceNotFoundException.class, ResourceAlreadyExistsException.class})
     public ResponseEntity<?> handleNotFound(Exception ex) {
         return ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
@@ -42,7 +41,8 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
         String errors = String.join("; ", errorList);
 
-        ApiResponse<Object> response = new ApiResponse<>(HttpStatus.BAD_REQUEST, errors, null, "VALIDATION_ERROR");
+        ApiResponse<Object> response =
+                new ApiResponse<>(HttpStatus.BAD_REQUEST, errors, null, "VALIDATION_ERROR");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

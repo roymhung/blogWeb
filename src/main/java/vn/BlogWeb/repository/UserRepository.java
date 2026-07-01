@@ -1,5 +1,6 @@
 package vn.BlogWeb.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByNameAndEmail(String name, String email);
 
     boolean existsByEmail(String email);
+
+    List<User> findByRole_Name(String roleName);
+
 }

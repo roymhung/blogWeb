@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -37,8 +38,13 @@ public class UserController {
 
     // GET ALL
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers() {
-        List<UserResponseDTO> users = this.userService.fetchUsers();
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers(
+            @RequestParam(required = false) String role) {
+        List<UserResponseDTO> users = null;
+        if (role != null)
+            users = this.userService.fetchUsersWithRole(role);
+        else
+            users = this.userService.fetchUsers();
         return ApiResponse.success(users);
     }
 

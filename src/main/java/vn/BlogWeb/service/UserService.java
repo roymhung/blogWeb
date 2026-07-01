@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
 import vn.BlogWeb.helper.exception.ResourceNotFoundException;
@@ -26,8 +25,21 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public List<UserResponseDTO> fetchUsers() {
+    public List<UserResponseDTO> fetchUsersWithRole(String roleName) {
 
+        List<UserResponseDTO> userList = userRepository
+                .findByRole_Name(roleName).stream().map(
+                        user -> UserResponseDTO.builder().id(user.getId()).name(user.getName())
+                                .email(user.getEmail()).address(user.getAddress())
+                                .role(new RoleResponseDTO(user.getRole().getId(),
+                                        user.getRole().getName()))
+                                .build())
+                .collect(Collectors.toList());
+
+        return userList;
+    }
+
+    public List<UserResponseDTO> fetchUsers() {
         List<UserResponseDTO> userList = userRepository.findAll().stream()
                 .map(user -> UserResponseDTO.builder().id(user.getId()).name(user.getName())
                         .email(user.getEmail()).address(user.getAddress())
