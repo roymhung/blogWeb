@@ -11,18 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserResponseDTO {
+public class RoleResponseDTO {
 
-    private int id;
+    private Long id;
 
     private String name;
-
-    private String email;
-
-    private String password;
-
-    private String address;
-
-    private RoleResponseDTO role;
-
 }

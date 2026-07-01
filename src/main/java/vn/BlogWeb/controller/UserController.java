@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.BlogWeb.helper.ApiResponse;
 import vn.BlogWeb.model.User;
+import vn.BlogWeb.model.dto.UserRequestDTO;
 import vn.BlogWeb.model.dto.UserResponseDTO;
 import vn.BlogWeb.service.UserService;
 
@@ -36,17 +37,17 @@ public class UserController {
 
     // GET ALL
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
-        List<User> users = this.userService.fetchUsers();
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers() {
+        List<UserResponseDTO> users = this.userService.fetchUsers();
         return ApiResponse.success(users);
     }
 
 
     // GET BY ID
     @GetMapping("/users/{id}")
-    public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable int id) {
 
-        User user = this.userService.findUserById(id);
+        UserResponseDTO user = this.userService.findUserById(id);
         return ApiResponse.success(user);
 
     }
@@ -55,10 +56,9 @@ public class UserController {
     // UPDATE
     @PutMapping("/users/{id}")
     public ResponseEntity<ApiResponse<String>> updateUser(@PathVariable int id,
-            @RequestBody User inputUser) {
+            @RequestBody UserRequestDTO inputUser) {
 
-        inputUser.setId(id);
-        this.userService.updateUser(inputUser);
+        this.userService.updateUser(id, inputUser);
 
         return ApiResponse.success("Updated successfully");
     }

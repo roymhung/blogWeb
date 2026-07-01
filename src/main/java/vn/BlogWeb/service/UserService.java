@@ -1,6 +1,7 @@
 package vn.BlogWeb.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import vn.BlogWeb.helper.exception.ResourceAlreadyExistsException;
 import vn.BlogWeb.helper.exception.ResourceNotFoundException;
 import vn.BlogWeb.model.Role;
 import vn.BlogWeb.model.User;
+import vn.BlogWeb.model.dto.RoleResponseDTO;
+import vn.BlogWeb.model.dto.UserRequestDTO;
 import vn.BlogWeb.model.dto.UserResponseDTO;
 import vn.BlogWeb.repository.RoleRepository;
 import vn.BlogWeb.repository.UserRepository;
@@ -23,20 +26,24 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public List<User> fetchUsers() {
-        List<User> userList = this.userRepository.findAll();
+    public List<UserResponseDTO> fetchUsers() {
+
+        List<UserResponseDTO> userList = userRepository.findAll().stream()
+                .map(user -> UserResponseDTO.builder().id(user.getId()).name(user.getName())
+                        .email(user.getEmail()).address(user.getAddress())
+                        .role(new RoleResponseDTO(user.getRole().getId(), user.getRole().getName()))
+                        .build())
+                .collect(Collectors.toList());
 
         return userList;
     }
 
     public UserResponseDTO convertUserToDTO(User user) {
-        // UserResponseDTO dto = new UserResponseDTO();
-        // dto.setId(user.getId());
-        // dto.setEmail(user.getEmail());
-        // return dto;
 
+        RoleResponseDTO userRole =
+                new RoleResponseDTO(user.getRole().getId(), user.getRole().getName());
         return UserResponseDTO.builder().id(user.getId()).name(user.getName())
-                .email(user.getEmail()).address(user.getAddress()).role(user.getRole()).build();
+                .email(user.getEmail()).address(user.getAddress()).role(userRole).build();
     }
 
     public UserResponseDTO createUser(User user) {
@@ -60,20 +67,26 @@ public class UserService {
         return convertUserToDTO(this.userRepository.save(user));
     }
 
-    public User findUserById(int id) {
-        return this.userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("user not found with id = " + id));
+    public UserResponseDTO findUserById(int id) {
+        User userInDB = this.userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found with id = " + id));
+        return convertUserToDTO(userInDB);
     }
 
-    public void updateUser(User inputUser) {
-        User currentUserInDB = this.findUserById(inputUser.getId());
-        if (currentUserInDB != null) {
-            currentUserInDB.setName(inputUser.getName());
-            currentUserInDB.setEmail(inputUser.getEmail());
-            currentUserInDB.setAddress(inputUser.getAddress());
+    public void updateUser(int id, UserRequestDTO inputUser) {
+        User userInDB = this.userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found with id = " + id));
 
-            this.userRepository.save(currentUserInDB);
+        // Cập nhật Role
+        if (inputUser.getRole() != null) {
+            userInDB.setRole(inputUser.getRole());
         }
+
+        // Cập nhật thông tin
+        userInDB.setName(inputUser.getName());
+        userInDB.setAddress(inputUser.getAddress());
+
+        this.userRepository.save(userInDB);
     }
 
     public void deleteUserById(int id) {
